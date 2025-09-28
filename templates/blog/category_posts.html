@@ -1,0 +1,151 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - 墨境BLOG{% endblock %}
+
+{% block content %}
+<!-- 分类信息 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="category-header">
+            <h2>
+                <i class="fas fa-tag"></i> {{ category.name }}
+            </h2>
+            {% if category.description %}
+            <p class="lead">{{ category.description }}</p>
+            {% endif %}
+            <div class="category-stats">
+                <span class="badge badge-secondary">
+                    <i class="fas fa-file-alt"></i> {{ posts.count }} 篇文章
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 文章列表 -->
+<div class="row">
+    {% for post in page_obj %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card post-card h-100">
+            {% if post.featured_image %}
+            <img src="{{ post.featured_image.url }}" class="card-img-top" alt="{{ post.title }}">
+            {% else %}
+            <img src="{% static 'images/placeholder/placeholder-1.svg' %}" 
+                 class="card-img-top" alt="{{ post.title }}">
+            {% endif %}
+            
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">
+                    <a href="{% url 'blog:post_detail' post.slug %}" class="post-title">
+                        {{ post.title }}
+                    </a>
+                </h5>
+                
+                <div class="post-meta mb-2">
+                    <small class="text-muted">
+                        <i class="fas fa-user"></i> {{ post.author.username }}
+                        <i class="fas fa-calendar ml-2"></i> {{ post.created_at|date:"Y年m月d日" }}
+                        <i class="fas fa-eye ml-2"></i> {{ post.views }}
+                    </small>
+                </div>
+                
+                <p class="card-text post-excerpt flex-grow-1">
+                    {{ post.excerpt|default:post.content|truncatechars:150 }}
+                </p>
+                
+                <div class="mt-auto">
+                    <a href="{% url 'blog:post_detail' post.slug %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-book-open"></i> 阅读全文
+                    </a>
+                    
+                    {% if post.comments.count > 0 %}
+                    <small class="text-muted float-right">
+                        <i class="fas fa-comment"></i> {{ post.comments.count }}
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle"></i> 该分类下暂无文章
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 分页 -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">
+                <i class="fas fa-angle-double-left"></i> 首页
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                <i class="fas fa-angle-left"></i> 上一页
+            </a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item active">
+            <span class="page-link">
+                第 {{ page_obj.number }} 页，共 {{ page_obj.paginator.num_pages }} 页
+            </span>
+        </li>
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                下一页 <i class="fas fa-angle-right"></i>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                末页 <i class="fas fa-angle-double-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+<!-- 返回分类列表 -->
+<div class="text-center mt-4">
+    <a href="{% url 'blog:post_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 返回首页
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.category-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.category-header h2 {
+    margin-bottom: 1rem;
+}
+
+.category-stats {
+    margin-top: 1rem;
+}
+
+.category-stats .badge {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+</style>
+{% endblock %}

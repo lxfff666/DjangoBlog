@@ -1,0 +1,14 @@
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9b59b6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34495e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="200" fill="url(#gradient3)"/>
+  <rect x="25" y="25" width="350" height="150" fill="none" stroke="white" stroke-width="2" rx="20"/>
+  <text x="200" y="85" font-family="Arial, sans-serif" font-size="22" fill="white" text-anchor="middle" dominant-baseline="middle">博客文章</text>
+  <text x="200" y="115" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle" dominant-baseline="middle">Blog Post</text>
+  <ellipse cx="80" cy="40" rx="20" ry="10" fill="white" opacity="0.3"/>
+  <ellipse cx="320" cy="160" rx="25" ry="12" fill="white" opacity="0.2"/>
+</svg>

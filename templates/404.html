@@ -1,0 +1,105 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}页面未找到 - 墨境BLOG{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="error-page text-center py-5">
+                <div class="error-icon mb-4">
+                    <i class="fas fa-exclamation-triangle fa-5x text-warning"></i>
+                </div>
+                <h1 class="display-1 fw-bold text-primary mb-3">404</h1>
+                <h2 class="h3 mb-4">抱歉，您访问的页面不存在</h2>
+                <p class="text-muted mb-4">
+                    您访问的页面可能已被删除、移动或暂时不可用。
+                </p>
+                <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+                    <a href="{% url 'blog:post_list' %}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>返回首页
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>返回上页
+                    </button>
+                </div>
+                
+                <!-- 搜索建议 -->
+                <div class="mt-5">
+                    <h5 class="mb-3">或者您可以尝试搜索：</h5>
+                    <form method="get" action="{% url 'blog:post_list' %}" class="row g-2 justify-content-center">
+                        <div class="col-auto">
+                            <input type="text" name="q" class="form-control" placeholder="搜索文章..." required>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-search me-1"></i>搜索
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 热门文章 -->
+                <div class="mt-5">
+                    <h5 class="mb-3">热门文章推荐：</h5>
+                    <div class="row g-3">
+                        {% for post in recent_posts|slice:":3" %}
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm">
+                                {% if post.featured_image %}
+                                <img src="{{ post.featured_image.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 120px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <a href="{{ post.get_absolute_url }}" class="text-decoration-none">
+                                            {{ post.title|truncatechars:30 }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>{{ post.created_at|date:"Y-m-d" }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.error-icon {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+</style>
+{% endblock %}

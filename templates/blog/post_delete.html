@@ -1,0 +1,47 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}删除文章 - 墨境BLOG{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> 删除确认
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-warning"></i> 警告！</h5>
+                    <p>您确定要删除这篇文章吗？此操作无法撤销。</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h5>文章信息：</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>标题：</strong> {{ post.title }}</li>
+                        <li><strong>作者：</strong> {{ post.author.username }}</li>
+                        <li><strong>发布时间：</strong> {{ post.created_at|date:"Y年m月d日 H:i" }}</li>
+                        <li><strong>浏览次数：</strong> {{ post.views }}</li>
+                        <li><strong>评论数量：</strong> {{ post.comments.count }}</li>
+                    </ul>
+                </div>
+                
+                <form method="post" class="text-center">
+                    {% csrf_token %}
+                    <div class="btn-group" role="group">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 确认删除
+                        </button>
+                        <a href="{% url 'blog:post_detail' post.slug %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

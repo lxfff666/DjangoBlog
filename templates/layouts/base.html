@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}墨境BLOG{% endblock %}</title>
+    
+    <!-- Favicon -->
+    {% load static %}
+    <link rel="icon" href="{% static 'images/favicon.ico' %}">
+    
+    <!-- 阻止Vite开发模式请求 -->
+    <script>
+        // 阻止Vite客户端请求 - 更全面的阻止
+        (function() {
+            // 阻止fetch请求
+            if (typeof window.fetch !== 'undefined') {
+                const originalFetch = window.fetch;
+                window.fetch = function(url, options) {
+                    if (typeof url === 'string' && url.includes('@vite/client')) {
+                        console.log('阻止Vite客户端请求(fetch):', url);
+                        return Promise.resolve(new Response('', { status: 200 }));
+                    }
+                    return originalFetch.apply(this, arguments);
+                };
+            }
+            
+            // 阻止XMLHttpRequest
+            if (typeof window.XMLHttpRequest !== 'undefined') {
+                const OriginalXMLHttpRequest = window.XMLHttpRequest;
+                window.XMLHttpRequest = function() {
+                    const xhr = new OriginalXMLHttpRequest();
+                    const originalOpen = xhr.open;
+                    xhr.open = function(method, url, async, user, password) {
+                        if (typeof url === 'string' && url.includes('@vite/client')) {
+                            console.log('阻止Vite客户端请求(XHR):', url);
+                            // 返回一个已完成的请求
+                            setTimeout(() => {
+                                Object.defineProperty(xhr, 'readyState', { value: 4 });
+                                Object.defineProperty(xhr, 'status', { value: 200 });
+                                Object.defineProperty(xhr, 'responseText', { value: '' });
+                                if (xhr.onreadystatechange) xhr.onreadystatechange();
+                                if (xhr.onload) xhr.onload();
+                            }, 0);
+                            return;
+                        }
+                        return originalOpen.apply(this, arguments);
+                    };
+                    return xhr;
+                };
+            }
+            
+            // 阻止WebSocket连接
+            if (typeof window.WebSocket !== 'undefined') {
+                const OriginalWebSocket = window.WebSocket;
+                window.WebSocket = function(url, protocols) {
+                    if (typeof url === 'string' && (url.includes('vite') || url.includes('hmr'))) {
+                        console.log('阻止Vite WebSocket连接:', url);
+                        // 返回一个模拟的WebSocket对象
+                        return {
+                            readyState: 3, // CLOSED
+                            close: function() {},
+                            send: function() {},
+                            addEventListener: function() {},
+                            removeEventListener: function() {}
+                        };
+                    }
+                    return new OriginalWebSocket(url, protocols);
+                };
+            }
+            
+            // 阻止Vite相关的script标签创建
+            if (typeof document !== 'undefined' && document.createElement) {
+                const originalCreateElement = document.createElement;
+                document.createElement = function(tagName) {
+                    const element = originalCreateElement.call(this, tagName);
+                    if (tagName.toLowerCase() === 'script' && element.src) {
+                        const originalSrc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+                        Object.defineProperty(element, 'src', {
+                            set: function(value) {
+                                if (value && value.includes('@vite/client')) {
+                                    console.log('阻止Vite script标签创建:', value);
+                                    return;
+                                }
+                                originalSrc.set.call(this, value);
+                            },
+                            get: function() {
+                                return originalSrc.get.call(this);
+                            }
+                        });
+                    }
+                    return element;
+                };
+            }
+        })();
+    </script>
+    
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="{% static 'vendor/fontawesome/all.min.css' %}" rel="stylesheet">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'blog:post_list' %}">
+                <i class="fas fa-blog"></i> 墨境BLOG
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:post_list' %}">
+                            <i class="fas fa-home"></i> 首页
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:create_post' %}">
+                            <i class="fas fa-pen"></i> 写文章
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ user.username }}
+                        </a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-user-circle"></i> 个人资料
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> 登出
+                            </a>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="fas fa-sign-in-alt"></i> 登录
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:register' %}">
+                            <i class="fas fa-user-plus"></i> 注册
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 消息提示 -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 页面加载动画 -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-content">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">加载中...</span>
+            </div>
+            <p class="mt-3 text-muted">页面加载中，请稍候...</p>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <main class="container my-5 main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-6">
+                    <p>&copy; 2025 墨境BLOG. 保留所有权利.</p>
+                </div>
+                <div class="col-md-6">
+                    <p>基于 Django 和 Bootstrap 构建</p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <a href="/" class="text-light mx-2"><i class="fas fa-home"></i> 首页</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}" class="text-light mx-2"><i class="fas fa-user"></i> 个人资料</a>
+                <a href="{% url 'blog:create_post' %}" class="text-light mx-2"><i class="fas fa-pen"></i> 写文章</a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="text-light mx-2"><i class="fas fa-sign-in-alt"></i> 登录</a>
+                <a href="{% url 'accounts:register' %}" class="text-light mx-2"><i class="fas fa-user-plus"></i> 注册</a>
+                {% endif %}
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

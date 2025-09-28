@@ -1,0 +1,705 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{% if form.instance.pk %}编辑文章{% else %}创建文章{% endif %} - 墨境BLOG{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    {% if form.instance.pk %}
+                    <i class="fas fa-edit"></i> 编辑文章
+                    {% else %}
+                    <i class="fas fa-plus"></i> 创建新文章
+                    {% endif %}
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong><i class="fas fa-exclamation-triangle"></i> 表单验证失败</strong>
+                    <p class="mb-0">请检查以下字段：</p>
+                    <ul class="mb-0">
+                        {% for field in form %}
+                            {% if field.errors %}
+                                <li>{{ field.label }}: {{ field.errors|join:", " }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endif %}
+                
+                <form method="post" enctype="multipart/form-data" id="post-form" class="post-form">
+                    {% csrf_token %}
+                    
+                    <!-- 基本信息区域 -->
+                    <div class="form-section mb-4">
+                        <h5 class="section-title"><i class="fas fa-info-circle"></i> 基本信息</h5>
+                        
+                        <!-- 标题 -->
+                        <div class="form-group">
+                            <label for="{{ form.title.id_for_label }}" class="required">文章标题 *</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.title.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-lightbulb"></i> 请输入文章标题，建议长度在 10-100 个字符之间
+                            </small>
+                        </div>
+                        
+                        <!-- Slug -->
+                        <div class="form-group">
+                            <label for="{{ form.slug.id_for_label }}">URL 别名</label>
+                            {{ form.slug }}
+                            {% if form.slug.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.slug.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-link"></i> 留空将自动生成，建议使用英文和连字符
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- 分类和标签区域 -->
+                    <div class="form-section mb-4">
+                        <h5 class="section-title"><i class="fas fa-tags"></i> 分类和标签</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- 分类 -->
+                                <div class="form-group">
+                                    <label for="{{ form.category.id_for_label }}">分类</label>
+                                    {{ form.category }}
+                                    {% if form.category.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.category.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-folder"></i> 选择文章所属分类
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- 标签 -->
+                                <div class="form-group">
+                                    <label for="{{ form.tags.id_for_label }}">标签</label>
+                                    {{ form.tags }}
+                                    {% if form.tags.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.tags.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-tags"></i> 输入相关标签，用逗号分隔（支持中文逗号，）
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 内容区域 -->
+                    <div class="form-section mb-4">
+                        <h5 class="section-title"><i class="fas fa-edit"></i> 内容编辑</h5>
+                        
+                        <!-- 特色图片 -->
+                        <div class="form-group">
+                            <label for="{{ form.featured_image.id_for_label }}">特色图片</label>
+                            {{ form.featured_image }}
+                            {% if form.featured_image.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.featured_image.errors }}
+                            </div>
+                            {% endif %}
+                            {% if form.instance.pk and form.instance.featured_image %}
+                            <div class="mt-3">
+                                <img src="{{ form.instance.featured_image.url }}" class="img-thumbnail" style="max-width: 300px;" alt="当前图片">
+                                <p class="text-muted mt-2">
+                                    <small>当前图片，重新上传将替换此图片</small>
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 摘要 -->
+                        <div class="form-group">
+                            <label for="{{ form.excerpt.id_for_label }}">文章摘要</label>
+                            {{ form.excerpt }}
+                            {% if form.excerpt.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.excerpt.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i> 简要描述文章内容，建议长度在 50-200 个字符之间，留空将自动生成
+                            </small>
+                        </div>
+                        
+                        <!-- 内容 -->
+                        <div class="form-group">
+                            <label for="{{ form.content.id_for_label }}" class="required">文章内容 *</label>
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.content.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="content-editor-toolbar mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-keyboard"></i> 支持 HTML 标签，可以使用格式化工具
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 发布设置区域 -->
+                    <div class="form-section mb-4">
+                        <h5 class="section-title"><i class="fas fa-cog"></i> 发布设置</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- 状态 -->
+                                <div class="form-group">
+                                    <label for="{{ form.status.id_for_label }}">发布状态</label>
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.status.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-eye"></i> 草稿状态只有作者可见，已发布状态所有人可见
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- 评论设置 -->
+                                <div class="form-check mt-4">
+                                    {{ form.allow_comments }}
+                                    <label class="form-check-label" for="{{ form.allow_comments.id_for_label }}">
+                                        允许评论
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 按钮 -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> 
+                            {% if form.instance.pk %}更新文章{% else %}发布文章{% endif %}
+                        </button>
+                        <a href="{% url 'blog:post_list' %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                        {% if not form.instance.pk %}
+                        <button type="button" class="btn btn-outline-primary btn-lg" id="save-draft-btn">
+                            <i class="fas fa-file-alt"></i> 保存草稿
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 表单整体样式 */
+    .form-section {
+        background-color: #f8f9fa;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        border: 1px solid #e9ecef;
+    }
+    
+    .section-title {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #007bff;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        border: 1px solid #ced4da;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        transform: translateY(-1px);
+    }
+    
+    textarea.form-control {
+        min-height: 300px;
+        resize: vertical;
+        font-family: 'Courier New', monospace;
+    }
+    
+    textarea.form-control.editor-content {
+        min-height: 400px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+    }
+    
+    .form-control::placeholder {
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .form-text.text-muted {
+        color: #6c757d !important;
+    }
+    
+    .invalid-feedback {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .invalid-feedback.d-block {
+        color: #dc3545;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    /* 按钮样式 */
+    .btn {
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-right: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-lg {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    }
+    
+    .btn-outline-primary {
+        border: 2px solid #007bff;
+        color: #007bff;
+        background: transparent;
+    }
+    
+    .btn-outline-primary:hover {
+        background: #007bff;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+        border: none;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #545b62 0%, #3d4246 100%);
+    }
+    
+    /* 卡片样式 */
+    .card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 1rem 1rem 0 0 !important;
+        padding: 1.5rem 2rem;
+        border: none;
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    /* 图片预览 */
+    .img-thumbnail {
+        border-radius: 0.5rem;
+        border: 2px solid #dee2e6;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 警告框样式 */
+    .alert {
+        border-radius: 0.75rem;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+    }
+    
+    /* 表单操作按钮区域 */
+    .form-actions {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #e9ecef;
+        text-align: center;
+    }
+    
+    /* 必填字段标识 */
+    .required::after {
+        content: " *";
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    /* 标签输入框样式 */
+    .tag-widget {
+        border-radius: 0.5rem;
+        border: 1px solid #ced4da;
+        padding: 0.5rem;
+        min-height: 3rem;
+    }
+    
+    .tag-widget:focus-within {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    /* 内容编辑器工具栏 */
+    .content-editor-toolbar {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem 0.5rem 0 0;
+        padding: 0.75rem;
+        border-bottom: none;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-section {
+            padding: 1rem;
+        }
+        
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        
+        .form-actions {
+            text-align: left;
+        }
+    }
+    
+    /* 动画效果 */
+    .form-control, .form-select, .btn, .card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* 加载状态 */
+    .btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* 自定义复选框样式 */
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 0.125rem;
+    }
+    
+    .form-check-label {
+        margin-left: 0.5rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 文章表单增强功能
+document.addEventListener('DOMContentLoaded', function() {
+    const titleField = document.getElementById('{{ form.title.id_for_label }}');
+    const slugField = document.getElementById('{{ form.slug.id_for_label }}');
+    const contentField = document.getElementById('{{ form.content.id_for_label }}');
+    const excerptField = document.getElementById('{{ form.excerpt.id_for_label }}');
+    const form = document.getElementById('post-form');
+    const saveDraftBtn = document.getElementById('save-draft-btn');
+    
+    // 自动生成 slug
+    if (titleField && slugField) {
+        titleField.addEventListener('input', function() {
+            const title = this.value;
+            
+            if (!slugField.value) {
+                const slug = title
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                slugField.value = slug;
+            }
+        });
+    }
+    
+    // 自动生成摘要
+    if (contentField && excerptField) {
+        contentField.addEventListener('input', function() {
+            const content = this.value;
+            
+            if (!excerptField.value && content.length > 50) {
+                // 提取纯文本，去除HTML标签
+                const plainText = content.replace(/<[^>]*>/g, '');
+                const summary = plainText.substring(0, 200) + (plainText.length > 200 ? '...' : '');
+                excerptField.value = summary;
+                
+                // 添加视觉反馈
+                excerptField.style.backgroundColor = '#e7f3ff';
+                setTimeout(() => {
+                    excerptField.style.backgroundColor = '';
+                }, 1000);
+            }
+        });
+    }
+    
+    // 保存草稿功能
+    if (saveDraftBtn) {
+        saveDraftBtn.addEventListener('click', function() {
+            // 设置状态为草稿
+            const statusField = document.getElementById('{{ form.status.id_for_label }}');
+            if (statusField) {
+                statusField.value = 'draft';
+            }
+            
+            // 显示保存提示
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+            this.disabled = true;
+            
+            // 提交表单
+            form.submit();
+        });
+    }
+    
+    // 表单提交增强
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+    
+
+    
+    // 内容字段高度自适应
+    if (contentField) {
+        contentField.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.max(400, this.scrollHeight) + 'px';
+        });
+    }
+    
+    // 图片预览功能
+    const imageField = document.getElementById('{{ form.featured_image.id_for_label }}');
+    if (imageField) {
+        imageField.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // 创建或更新预览图片
+                    let preview = document.getElementById('image-preview');
+                    if (!preview) {
+                        preview = document.createElement('div');
+                        preview.id = 'image-preview';
+                        preview.className = 'mt-3';
+                        preview.innerHTML = `
+                            <img src="" class="img-thumbnail" style="max-width: 300px;" alt="预览图片">
+                            <p class="text-muted mt-2">
+                                <small>新图片预览</small>
+                            </p>
+                        `;
+                        imageField.parentNode.appendChild(preview);
+                    }
+                    preview.querySelector('img').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // 标签输入增强
+    const tagsField = document.getElementById('{{ form.tags.id_for_label }}');
+    if (tagsField) {
+        tagsField.addEventListener('input', function() {
+            // 自动处理分隔符 - 支持中英文逗号
+            let value = this.value;
+            
+            // 将中文逗号替换为英文逗号
+            value = value.replace(/，/g, ',');
+            
+            // 如果用户输入空格，自动替换为逗号（仅在标签之间）
+            const lastChar = value[value.length - 1];
+            if (lastChar === ' ' && value.length > 1) {
+                // 检查前面是否是逗号，避免重复
+                const prevChar = value[value.length - 2];
+                if (prevChar !== ',') {
+                    value = value.trim() + ', ';
+                }
+            }
+            
+            this.value = value;
+        });
+        
+        // 添加标签提示 - 更新为支持中文逗号
+        tagsField.placeholder = '输入标签，用逗号分隔（支持中文逗号），例如：Django, Python, Web开发';
+    }
+    
+    // 表单验证增强
+    function validateForm() {
+        let isValid = true;
+        const errors = [];
+        
+        // 标题验证
+        if (titleField && titleField.value.trim().length < 5) {
+            errors.push('标题长度至少需要5个字符');
+            isValid = false;
+        }
+        
+        // 内容验证
+        if (contentField && contentField.value.trim().length < 10) {
+            errors.push('内容长度至少需要10个字符');
+            isValid = false;
+        }
+        
+        // 分类验证
+        const categoryField = document.getElementById('{{ form.category.id_for_label }}');
+        if (categoryField && !categoryField.value) {
+            errors.push('请选择文章分类');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            // 显示自定义错误提示
+            showCustomAlert('error', errors.join('\n'));
+        }
+        
+        return isValid;
+    }
+    
+    // 自定义提示框
+    function showCustomAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show`;
+        alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            <strong><i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i></strong> ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // 自动关闭
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+    
+    // 绑定表单验证
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
+            }
+            return true;
+        });
+    }
+    
+    // 自动保存草稿（每30秒）
+    let autoSaveTimer;
+    function autoSave() {
+        if (!form || !titleField || !contentField) return;
+        
+        // 如果有内容且是新建文章
+        if (titleField.value.trim() || contentField.value.trim()) {
+            // 这里可以实现真正的自动保存功能
+            console.log('自动保存草稿...');
+        }
+    }
+    
+    // 启动自动保存
+    autoSaveTimer = setInterval(autoSave, 30000);
+    
+    // 页面卸载时清理
+    window.addEventListener('beforeunload', function() {
+        if (autoSaveTimer) {
+            clearInterval(autoSaveTimer);
+        }
+    });
+    
+    console.log('文章表单增强功能已加载');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+# 墨境Blog - 项目依赖
+# 项目官网: https://github.com/your-username/墨境Blog
+# 项目描述: 基于Django的博客平台，追求简约而不简单的设计理念
+# 作者: 墨境开发团队
+# 许可证: MIT
+
+asgiref==3.8.1
+backports.zoneinfo==0.2.1
+
+crispy-bootstrap4==2022.1
+Django==4.2.24
+django-crispy-forms==1.14.0
+django-taggit==6.1.0
+
+Pillow==9.5.0
+pytz==2025.2
+sqlparse==0.5.3
+typing_extensions==4.13.2
+tzdata==2025.2

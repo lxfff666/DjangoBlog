@@ -1,0 +1,121 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ user.username }}的个人资料 - 墨境BLOG{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header text-center">
+                <h5>个人资料</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-user-circle fa-5x text-secondary"></i>
+                </div>
+                <h4>{{ user.username }}</h4>
+                <p class="text-muted">{{ user.email }}</p>
+                <p class="text-muted">
+                    注册时间：{{ user.date_joined|date:"Y年m月d日" }}
+                </p>
+                {% if user.first_name or user.last_name %}
+                <p class="text-muted">
+                    姓名：{{ user.first_name }} {{ user.last_name }}
+                </p>
+                {% endif %}
+                
+                <!-- 编辑按钮 -->
+                <div class="mt-3">
+                    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary btn-sm me-2">
+                        <i class="fas fa-edit"></i> 编辑资料
+                    </a>
+                    <a href="{% url 'accounts:change_password' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-key"></i> 修改密码
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- 我的文章 -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5>
+                    <i class="fas fa-pen"></i> 我的文章
+                    <span class="badge badge-secondary">{{ user_posts.count }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if user_posts %}
+                <div class="list-group">
+                    {% for post in user_posts %}
+                    <a href="{% url 'blog:post_detail' post.slug %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                {{ post.title }}
+                                {% if post.status == 'draft' %}
+                                <span class="badge badge-warning ml-2">草稿</span>
+                                {% else %}
+                                <span class="badge badge-success ml-2">已发布</span>
+                                {% endif %}
+                            </h6>
+                            <small class="text-muted">{{ post.created_at|date:"m月d日" }}</small>
+                        </div>
+                        <p class="mb-1">{{ post.excerpt|truncatechars:100 }}</p>
+                        <small class="text-muted">
+                            <i class="fas fa-eye"></i> {{ post.views }} 浏览
+                            <i class="fas fa-comment ml-2"></i> {{ post.comments.count }} 评论
+                        </small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">您还没有发布任何文章。</p>
+                <a href="{% url 'blog:create_post' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 发布第一篇文章
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- 我的评论 -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h5>
+                    <i class="fas fa-comments"></i> 我的评论
+                    <span class="badge badge-secondary">{{ user_comments.count }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if user_comments %}
+                <div class="list-group">
+                    {% for comment in user_comments %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                <a href="{% url 'blog:post_detail' comment.post.slug %}">
+                                    {{ comment.post.title }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">{{ comment.created_at|date:"m月d日 H:i" }}</small>
+                        </div>
+                        <p class="mb-1">{{ comment.content|truncatechars:150 }}</p>
+                        <small class="text-muted">
+                            {% if comment.is_approved %}
+                            <span class="badge badge-success">已批准</span>
+                            {% else %}
+                            <span class="badge badge-warning">待审核</span>
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">您还没有发表任何评论。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

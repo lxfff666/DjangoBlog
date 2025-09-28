@@ -1,0 +1,257 @@
+{% load static %}
+
+<!-- 侧边栏 -->
+<div class="sidebar">
+    <!-- 搜索框 -->
+    <div class="sidebar-widget mb-4">
+        <h5 class="widget-title">
+            <i class="fas fa-search me-2"></i>搜索文章
+        </h5>
+        <form method="get" action="{% url 'blog:post_list' %}">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="输入关键词...">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 分类 -->
+    <div class="sidebar-widget mb-4">
+        <h5 class="widget-title">
+            <i class="fas fa-folder me-2"></i>文章分类
+        </h5>
+        <ul class="category-list list-unstyled">
+            {% for category in categories %}
+            <li class="category-item">
+                <a href="{% url 'blog:category_posts' category.slug %}" class="d-flex justify-content-between align-items-center text-decoration-none">
+                    <span><i class="fas fa-folder-open me-2"></i>{{ category.name }}</span>
+                    <span class="badge bg-secondary">{{ category.posts.count }}</span>
+                </a>
+            </li>
+            {% empty %}
+            <li class="text-muted">暂无分类</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- 热门标签 -->
+    <div class="sidebar-widget mb-4">
+        <h5 class="widget-title">
+            <i class="fas fa-tags me-2"></i>热门标签
+        </h5>
+        <div class="tag-cloud">
+            {% if popular_tags %}
+                {% for tag in popular_tags|slice:":6" %}
+                <a href="{% url 'blog:tag_posts' tag.slug %}" class="tag-link" title="{{ tag.name }}">
+                    {{ tag.name }}
+                </a>
+                {% endfor %}
+            {% else %}
+            <span class="text-muted">暂无标签</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 热门文章 -->
+    <div class="sidebar-widget mb-4">
+        <h5 class="widget-title">
+            <i class="fas fa-fire me-2"></i>热门文章
+        </h5>
+        <ul class="popular-posts list-unstyled">
+            {% for post in popular_posts %}
+            <li class="popular-post-item">
+                <div class="d-flex">
+                    {% if post.featured_image %}
+                    <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="popular-post-image">
+                    {% else %}
+                    <img src="{% static 'images/placeholder/placeholder-1.svg' %}" alt="{{ post.title }}" class="popular-post-image">
+                    {% endif %}
+                    <div class="popular-post-content">
+                        <h6 class="popular-post-title mb-1">
+                            <a href="{% url 'blog:post_detail' post.slug %}">{{ post.title|truncatechars:30 }}</a>
+                        </h6>
+                        <small class="text-muted">
+                            <i class="fas fa-eye me-1"></i>{{ post.views }} 次浏览
+                        </small>
+                    </div>
+                </div>
+            </li>
+            {% empty %}
+            <li class="text-muted">暂无热门文章</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- 最新评论 -->
+    <div class="sidebar-widget mb-4">
+        <h5 class="widget-title">
+            <i class="fas fa-comments me-2"></i>最新评论
+        </h5>
+        <ul class="recent-comments list-unstyled">
+            {% for comment in recent_comments %}
+            <li class="recent-comment-item">
+                <div class="d-flex align-items-start">
+                    <div class="comment-avatar me-2">
+                        {% if comment.author.userprofile.avatar %}
+                        <img src="{{ comment.author.userprofile.avatar.url }}" alt="{{ comment.author.username }}" class="rounded-circle">
+                        {% else %}
+                        <img src="{% static 'images/placeholder/placeholder-1.svg' %}" alt="{{ comment.author.username }}" class="rounded-circle">
+                        {% endif %}
+                    </div>
+                    <div class="comment-content">
+                        <h6 class="comment-author mb-1">{{ comment.author.username }}</h6>
+                        <p class="comment-text mb-1">{{ comment.content|truncatechars:50 }}</p>
+                        <small class="text-muted">
+                            <a href="{% url 'blog:post_detail' comment.post.slug %}#comment-{{ comment.id }}">
+                                查看详情
+                            </a>
+                        </small>
+                    </div>
+                </div>
+            </li>
+            {% empty %}
+            <li class="text-muted">暂无评论</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<style>
+.sidebar {
+    position: sticky;
+    top: 2rem;
+}
+
+.widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #007bff;
+}
+
+.sidebar-widget {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.category-list {
+    margin: 0;
+}
+
+.category-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.category-item:last-child {
+    border-bottom: none;
+}
+
+.category-item a {
+    color: #333;
+    transition: color 0.2s ease;
+}
+
+.category-item a:hover {
+    color: #007bff;
+}
+
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag-link {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: #f8f9fa;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
+}
+
+.tag-link:hover {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+    transform: translateY(-1px);
+}
+
+.popular-posts {
+    margin: 0;
+}
+
+.popular-post-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.popular-post-item:last-child {
+    border-bottom: none;
+}
+
+.popular-post-image {
+    width: 60px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 0.25rem;
+    margin-right: 0.75rem;
+}
+
+.popular-post-title a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.popular-post-title a:hover {
+    color: #007bff;
+}
+
+.recent-comments {
+    margin: 0;
+}
+
+.recent-comment-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.recent-comment-item:last-child {
+    border-bottom: none;
+}
+
+.comment-avatar img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+}
+
+.comment-author {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.comment-text {
+    font-size: 0.8125rem;
+    color: #666;
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        position: static;
+        margin-top: 2rem;
+    }
+}
+</style>
