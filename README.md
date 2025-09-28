@@ -1,13 +1,16 @@
-### 墨境 (Mò Jìng)
+# 墨境 (Mò Jìng) BLOG
+## 🌟 项目理念
 **"墨"** - 代表文字、书写、知识的 
 传承，象征着博客的核心——文字创作  
 **"境"** - 代表境界、空间、世界， 
 寓意每个博客都是内心世界的映射    
 
 **墨境**寓意着用文字构建的精神世界，每一篇文章都是心灵的风景，每一个想法都构建着独特的精神境界。  
-## 🌟 项目理念
 
-在这个数字化的时代，我们用代码搭建桥梁，用文字记录思想，创造属于自己的精神领地。墨境不仅是一个博客平台，更是一个让思想自由飞翔的空间。  
+<img width="1920" height="1032" alt="1b50cd01af2df27fb8a4f636ff5331f9" src="https://github.com/user-attachments/assets/33e02fbf-fe9d-4b50-9896-788c3ef7d349" />
+
+<img width="1920" height="1032" alt="1b50cd01af2df27fb8a4f636ff5331f9" src="https://github.com/user-attachments/assets/cab6b2b9-daa9-4b80-9e2d-8d903bc02abd" />
+
 
 ## 🚀 功能特性
 
