@@ -8,6 +8,7 @@
 **墨境**寓意着用文字构建的精神世界，每一篇文章都是心灵的风景，每一个想法都构建着独特的精神境界。  
 
 <img width="1920" height="1032" alt="1b50cd01af2df27fb8a4f636ff5331f9" src="https://github.com/user-attachments/assets/33e02fbf-fe9d-4b50-9896-788c3ef7d349" />
+<img width="1920" height="994" alt="image" src="https://github.com/user-attachments/assets/3b96e899-0c7d-4b21-bdeb-38e74ae945ce" />
 
 <img width="1920" height="1032" alt="1b50cd01af2df27fb8a4f636ff5331f9" src="https://github.com/user-attachments/assets/cab6b2b9-daa9-4b80-9e2d-8d903bc02abd" />
 
